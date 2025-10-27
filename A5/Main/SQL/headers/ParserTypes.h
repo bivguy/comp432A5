@@ -10,6 +10,7 @@
 #include "MyDB_Table.h"
 #include <string>
 #include <utility>
+#include <map>
 
 using namespace std;
 
@@ -235,6 +236,19 @@ public:
 	
 	~SFWQuery () {}
 
+	bool checkTables(MyDB_CatalogPtr catalog) {
+		map <string, MyDB_TablePtr> allTables = MyDB_Table::getAllTables (catalog);
+
+		for (pair<string, string> aliasPair : this->tablesToProcess) {
+			if (allTables.find(aliasPair.second) == allTables.end()) {
+				cout << "Invalid alias " << aliasPair.second << endl;
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	void print () {
 		cout << "Selecting the following:\n";
 		for (auto a : valuesToSelect) {
@@ -281,6 +295,10 @@ public:
 		myTableToCreate = *useMe;
 		isQuery = false;
 		isCreate = true;
+	}
+
+	bool checkTables(MyDB_CatalogPtr catalog) {
+		return this->myQuery.checkTables(catalog);
 	}
 
 	bool isCreateTable () {

@@ -6,7 +6,6 @@
 #include "MyDB_Table.h"
 #include <string>
 #include <vector>
-#include <unordered_map>
 #include <utility>
 
 // create a smart pointer for database tables
@@ -22,7 +21,7 @@ enum class ReturnType { STRING, INT, DOUBLE, BOOL, ERROR };
 class ExprTree {
 
 public:
-	virtual ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess);
+	virtual ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess);
 	virtual string toString () = 0;
 	virtual ~ExprTree () {}
 };
@@ -111,7 +110,7 @@ public:
 		attName = string (attNameIn);
 	}
 
-	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
 		string name;
 		bool found = false;
 		for (pair<string, string> currPair : tablesToProcess) {
