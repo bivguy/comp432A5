@@ -26,6 +26,98 @@ public:
 	virtual ~ExprTree () {}
 };
 
+
+
+inline bool isNumeric(ReturnType returnType) {
+	return (returnType == ReturnType::INT || returnType == ReturnType::DOUBLE);
+}
+
+inline bool bothNumeric(ReturnType leftType, ReturnType rightType) {
+	return isNumeric(leftType) && isNumeric(rightType);
+}
+
+// includes all arithmetic except +
+inline ReturnType typeCheckForArithmetic(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess, ExprTreePtr lhs, ExprTreePtr rhs) {
+	// type check the left and right sides
+	ReturnType leftType = lhs->typeCheck(allTables, tablesToProcess);
+	ReturnType rightType = rhs->typeCheck(allTables, tablesToProcess);
+	
+	// return an error if the left and right side of this arithmetic op are not valid
+	if (leftType == ReturnType::ERROR || rightType == ReturnType::ERROR) {
+		return ReturnType::ERROR;
+	}
+
+	// the left and right side must be an int or a double
+	if (!bothNumeric(leftType, rightType)) {
+		return ReturnType::ERROR;
+	}
+
+	// if they're both an int, return an int
+	if (leftType == ReturnType::INT && rightType == ReturnType::INT) {
+		return ReturnType::INT;
+	}
+
+	return ReturnType::DOUBLE;
+}
+
+inline ReturnType typeCheckForComparisons(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess, ExprTreePtr lhs, ExprTreePtr rhs) {
+		// type check the left and right sides
+		ReturnType leftType = lhs->typeCheck(allTables, tablesToProcess);
+		ReturnType rightType = rhs->typeCheck(allTables, tablesToProcess);
+		
+		// return an error if the left and right side of the comparison are not valid
+		if (leftType == ReturnType::ERROR || rightType == ReturnType::ERROR) {
+			return ReturnType::ERROR;
+		}
+
+		// if one is a string, both must be a string
+		if ((leftType == ReturnType::STRING && rightType != ReturnType::STRING) ||
+		    (leftType != ReturnType::STRING && rightType == ReturnType::STRING)) {
+			return ReturnType::ERROR;
+		}
+
+		// if one is numeric, both must be numeric
+		if ((isNumeric(leftType) && !isNumeric(rightType)) ||
+		    (!isNumeric(leftType) && isNumeric(rightType))) {
+			return ReturnType::ERROR;
+		}
+
+		return ReturnType::BOOL;
+}
+
+// for checking equality expressions. Ex: a == b, a != b, 
+inline ReturnType typeCheckForEqualities(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess, ExprTreePtr lhs, ExprTreePtr rhs) {
+		// type check the left and right sides
+		ReturnType leftType = lhs->typeCheck(allTables, tablesToProcess);
+		ReturnType rightType = rhs->typeCheck(allTables, tablesToProcess);
+		
+		// return an error if the left and right side of the equality are not valid
+		if (leftType == ReturnType::ERROR || rightType == ReturnType::ERROR) {
+			return ReturnType::ERROR;
+		}
+
+		// if one is a string, both must be a string
+		if ((leftType == ReturnType::STRING && rightType != ReturnType::STRING) ||
+		    (leftType != ReturnType::STRING && rightType == ReturnType::STRING)) {
+			return ReturnType::ERROR;
+		}
+
+		// if one is numeric, both must be numeric
+		if ((isNumeric(leftType) && !isNumeric(rightType)) ||
+		    (!isNumeric(leftType) && isNumeric(rightType))) {
+			return ReturnType::ERROR;
+		}
+
+		// if one is a bool, both must be bool
+		if ((leftType == ReturnType::BOOL && rightType != ReturnType::BOOL) ||
+		    (leftType != ReturnType::BOOL && rightType == ReturnType::BOOL)) {
+			return ReturnType::ERROR;
+		}
+
+
+		return ReturnType::BOOL;
+}
+
 class BoolLiteral : public ExprTree {
 
 private:
@@ -34,6 +126,10 @@ public:
 	
 	BoolLiteral (bool fromMe) {
 		myVal = fromMe;
+	}
+
+	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+		return ReturnType::BOOL;
 	}
 
 	string toString () {
@@ -55,6 +151,10 @@ public:
 		myVal = fromMe;
 	}
 
+	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+		return ReturnType::DOUBLE;
+	}
+
 	string toString () {
 		return "double[" + to_string (myVal) + "]";
 	}	
@@ -73,6 +173,10 @@ public:
 		myVal = fromMe;
 	}
 
+	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+		return ReturnType::INT;
+	}
+
 	string toString () {
 		return "int[" + to_string (myVal) + "]";
 	}
@@ -89,6 +193,10 @@ public:
 	StringLiteral (char *fromMe) {
 		fromMe[strlen (fromMe) - 1] = 0;
 		myVal = string (fromMe + 1);
+	}
+
+	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+		return ReturnType::STRING;
 	}
 
 	string toString () {
@@ -171,6 +279,10 @@ public:
 		rhs = rhsIn;
 	}
 
+	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+		return typeCheckForArithmetic(allTables, tablesToProcess, lhs, rhs);
+	}
+
 	string toString () {
 		return "- (" + lhs->toString () + ", " + rhs->toString () + ")";
 	}	
@@ -192,6 +304,35 @@ public:
 		rhs = rhsIn;
 	}
 
+	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+
+			// type check the left and right sides
+			ReturnType leftType = lhs->typeCheck(allTables, tablesToProcess);
+			ReturnType rightType = rhs->typeCheck(allTables, tablesToProcess);
+			
+			// return an error if the left and right side of the plus op are not valid
+			if (leftType == ReturnType::ERROR || rightType == ReturnType::ERROR) {
+				return ReturnType::ERROR;
+			}
+
+			// if either side is a string, then the type is string
+			if (leftType == ReturnType::STRING || rightType == ReturnType::STRING) {
+				return ReturnType::STRING;
+			}
+
+			// if it's not a string, then left and right side must be numeric
+			if (!bothNumeric(leftType, rightType)) {
+				return ReturnType::ERROR;
+			}
+
+			// if they're both an int, return an int
+			if (leftType == ReturnType::INT && rightType == ReturnType::INT) {
+				return ReturnType::INT;
+			}
+
+			return ReturnType::DOUBLE;
+		}
+
 	string toString () {
 		return "+ (" + lhs->toString () + ", " + rhs->toString () + ")";
 	}	
@@ -211,6 +352,10 @@ public:
 	TimesOp (ExprTreePtr lhsIn, ExprTreePtr rhsIn) {
 		lhs = lhsIn;
 		rhs = rhsIn;
+	}
+
+	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+		return typeCheckForArithmetic(allTables, tablesToProcess, lhs, rhs);
 	}
 
 	string toString () {
@@ -234,6 +379,10 @@ public:
 		rhs = rhsIn;
 	}
 
+	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+		return typeCheckForArithmetic(allTables, tablesToProcess, lhs, rhs);
+	}
+
 	string toString () {
 		return "/ (" + lhs->toString () + ", " + rhs->toString () + ")";
 	}	
@@ -253,6 +402,10 @@ public:
 	GtOp (ExprTreePtr lhsIn, ExprTreePtr rhsIn) {
 		lhs = lhsIn;
 		rhs = rhsIn;
+	}
+
+	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+		return typeCheckForComparisons(allTables, tablesToProcess, lhs, rhs);
 	}
 
 	string toString () {
@@ -276,6 +429,10 @@ public:
 		rhs = rhsIn;
 	}
 
+	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+		return typeCheckForComparisons(allTables, tablesToProcess, lhs, rhs);
+	}
+
 	string toString () {
 		return "< (" + lhs->toString () + ", " + rhs->toString () + ")";
 	}	
@@ -295,6 +452,10 @@ public:
 	NeqOp (ExprTreePtr lhsIn, ExprTreePtr rhsIn) {
 		lhs = lhsIn;
 		rhs = rhsIn;
+	}
+	
+	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+		return typeCheckForEqualities(allTables, tablesToProcess, lhs, rhs);
 	}
 
 	string toString () {
@@ -318,6 +479,24 @@ public:
 		rhs = rhsIn;
 	}
 
+	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+		// type check the left and right sides
+		ReturnType leftType = lhs->typeCheck(allTables, tablesToProcess);
+		ReturnType rightType = rhs->typeCheck(allTables, tablesToProcess);
+		
+		// return an error if the left and right side of the OR op are not valid
+		if (leftType == ReturnType::ERROR || rightType == ReturnType::ERROR) {
+			return ReturnType::ERROR;
+		}
+
+		// both sides must be BOOL
+		if (leftType != ReturnType::BOOL || rightType != ReturnType::BOOL) {
+			return ReturnType::ERROR;
+		}
+
+		return ReturnType::BOOL;
+	}
+
 	string toString () {
 		return "|| (" + lhs->toString () + ", " + rhs->toString () + ")";
 	}	
@@ -339,6 +518,10 @@ public:
 		rhs = rhsIn;
 	}
 
+	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+		return typeCheckForEqualities(allTables, tablesToProcess, lhs, rhs);
+	}
+
 	string toString () {
 		return "== (" + lhs->toString () + ", " + rhs->toString () + ")";
 	}	
@@ -357,6 +540,15 @@ public:
 	NotOp (ExprTreePtr childIn) {
 		child = childIn;
 	}
+
+	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) { 
+		ReturnType childType = child->typeCheck(allTables, tablesToProcess);
+		if (childType != ReturnType::BOOL) {
+			return ReturnType::ERROR;
+		}
+		return ReturnType::BOOL;
+	}
+
 
 	string toString () {
 		return "!(" + child->toString () + ")";
@@ -402,5 +594,71 @@ public:
 
 	~AvgOp () {}
 };
+
+// inline bool isNumeric(ReturnType returnType) {
+// 	return (returnType == ReturnType::INT || returnType == ReturnType::DOUBLE);
+// }
+
+// inline bool bothNumeric(ReturnType leftType, ReturnType rightType) {
+// 	return isNumeric(leftType) && isNumeric(rightType);
+// }
+
+// inline ReturnType typeCheckForComparisons(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess, ExprTreePtr lhs, ExprTreePtr rhs) {
+// 		// type check the left and right sides
+// 		ReturnType leftType = lhs->typeCheck(allTables, tablesToProcess);
+// 		ReturnType rightType = rhs->typeCheck(allTables, tablesToProcess);
+		
+// 		// return an error if the left and right side of the comparison are not valid
+// 		if (leftType == ReturnType::ERROR || rightType == ReturnType::ERROR) {
+// 			return ReturnType::ERROR;
+// 		}
+
+// 		// if one is a string, both must be a string
+// 		if ((leftType == ReturnType::STRING && rightType != ReturnType::STRING) ||
+// 		    (leftType != ReturnType::STRING && rightType == ReturnType::STRING)) {
+// 			return ReturnType::ERROR;
+// 		}
+
+// 		// if one is numeric, both must be numeric
+// 		if ((isNumeric(leftType) && !isNumeric(rightType)) ||
+// 		    (!isNumeric(leftType) && isNumeric(rightType))) {
+// 			return ReturnType::ERROR;
+// 		}
+
+// 		return ReturnType::BOOL;
+// }
+
+// // for checking equality expressions. Ex: a == b, a != b, 
+// inline ReturnType typeCheckForEqualities(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess, ExprTreePtr lhs, ExprTreePtr rhs) {
+// 		// type check the left and right sides
+// 		ReturnType leftType = lhs->typeCheck(allTables, tablesToProcess);
+// 		ReturnType rightType = rhs->typeCheck(allTables, tablesToProcess);
+		
+// 		// return an error if the left and right side of the equality are not valid
+// 		if (leftType == ReturnType::ERROR || rightType == ReturnType::ERROR) {
+// 			return ReturnType::ERROR;
+// 		}
+
+// 		// if one is a string, both must be a string
+// 		if ((leftType == ReturnType::STRING && rightType != ReturnType::STRING) ||
+// 		    (leftType != ReturnType::STRING && rightType == ReturnType::STRING)) {
+// 			return ReturnType::ERROR;
+// 		}
+
+// 		// if one is numeric, both must be numeric
+// 		if ((isNumeric(leftType) && !isNumeric(rightType)) ||
+// 		    (!isNumeric(leftType) && isNumeric(rightType))) {
+// 			return ReturnType::ERROR;
+// 		}
+
+// 		// if one is a bool, both must be bool
+// 		if ((leftType == ReturnType::BOOL && rightType != ReturnType::BOOL) ||
+// 		    (leftType != ReturnType::BOOL && rightType == ReturnType::BOOL)) {
+// 			return ReturnType::ERROR;
+// 		}
+
+
+// 		return ReturnType::BOOL;
+// }
 
 #endif
