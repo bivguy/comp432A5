@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <unordered_map>
+#include <cstring>
 
 // create a smart pointer for database tables
 using namespace std;
@@ -26,8 +28,6 @@ public:
 	virtual ~ExprTree () {}
 };
 
-
-
 inline bool isNumeric(ReturnType returnType) {
 	return (returnType == ReturnType::INT || returnType == ReturnType::DOUBLE);
 }
@@ -37,7 +37,7 @@ inline bool bothNumeric(ReturnType leftType, ReturnType rightType) {
 }
 
 // includes all arithmetic except +
-inline ReturnType typeCheckForArithmetic(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess, ExprTreePtr lhs, ExprTreePtr rhs) {
+inline ReturnType typeCheckForArithmetic(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess, ExprTreePtr lhs, ExprTreePtr rhs) {
 	// type check the left and right sides
 	ReturnType leftType = lhs->typeCheck(allTables, tablesToProcess);
 	ReturnType rightType = rhs->typeCheck(allTables, tablesToProcess);
@@ -60,7 +60,7 @@ inline ReturnType typeCheckForArithmetic(unordered_map<string, MyDB_TablePtr> &a
 	return ReturnType::DOUBLE;
 }
 
-inline ReturnType typeCheckForComparisons(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess, ExprTreePtr lhs, ExprTreePtr rhs) {
+inline ReturnType typeCheckForComparisons(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess, ExprTreePtr lhs, ExprTreePtr rhs) {
 		// type check the left and right sides
 		ReturnType leftType = lhs->typeCheck(allTables, tablesToProcess);
 		ReturnType rightType = rhs->typeCheck(allTables, tablesToProcess);
@@ -86,7 +86,7 @@ inline ReturnType typeCheckForComparisons(unordered_map<string, MyDB_TablePtr> &
 }
 
 // for checking equality expressions. Ex: a == b, a != b, 
-inline ReturnType typeCheckForEqualities(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess, ExprTreePtr lhs, ExprTreePtr rhs) {
+inline ReturnType typeCheckForEqualities(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess, ExprTreePtr lhs, ExprTreePtr rhs) {
 		// type check the left and right sides
 		ReturnType leftType = lhs->typeCheck(allTables, tablesToProcess);
 		ReturnType rightType = rhs->typeCheck(allTables, tablesToProcess);
@@ -128,7 +128,7 @@ public:
 		myVal = fromMe;
 	}
 
-	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
 		return ReturnType::BOOL;
 	}
 
@@ -151,7 +151,7 @@ public:
 		myVal = fromMe;
 	}
 
-	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
 		return ReturnType::DOUBLE;
 	}
 
@@ -173,7 +173,7 @@ public:
 		myVal = fromMe;
 	}
 
-	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
 		return ReturnType::INT;
 	}
 
@@ -195,7 +195,7 @@ public:
 		myVal = string (fromMe + 1);
 	}
 
-	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
 		return ReturnType::STRING;
 	}
 
@@ -279,7 +279,7 @@ public:
 		rhs = rhsIn;
 	}
 
-	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
 		return typeCheckForArithmetic(allTables, tablesToProcess, lhs, rhs);
 	}
 
@@ -304,7 +304,7 @@ public:
 		rhs = rhsIn;
 	}
 
-	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
 
 			// type check the left and right sides
 			ReturnType leftType = lhs->typeCheck(allTables, tablesToProcess);
@@ -354,7 +354,7 @@ public:
 		rhs = rhsIn;
 	}
 
-	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
 		return typeCheckForArithmetic(allTables, tablesToProcess, lhs, rhs);
 	}
 
@@ -379,7 +379,7 @@ public:
 		rhs = rhsIn;
 	}
 
-	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
 		return typeCheckForArithmetic(allTables, tablesToProcess, lhs, rhs);
 	}
 
@@ -404,7 +404,7 @@ public:
 		rhs = rhsIn;
 	}
 
-	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
 		return typeCheckForComparisons(allTables, tablesToProcess, lhs, rhs);
 	}
 
@@ -429,7 +429,7 @@ public:
 		rhs = rhsIn;
 	}
 
-	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
 		return typeCheckForComparisons(allTables, tablesToProcess, lhs, rhs);
 	}
 
@@ -454,7 +454,7 @@ public:
 		rhs = rhsIn;
 	}
 	
-	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
 		return typeCheckForEqualities(allTables, tablesToProcess, lhs, rhs);
 	}
 
@@ -479,7 +479,7 @@ public:
 		rhs = rhsIn;
 	}
 
-	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
 		// type check the left and right sides
 		ReturnType leftType = lhs->typeCheck(allTables, tablesToProcess);
 		ReturnType rightType = rhs->typeCheck(allTables, tablesToProcess);
@@ -518,7 +518,7 @@ public:
 		rhs = rhsIn;
 	}
 
-	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
 		return typeCheckForEqualities(allTables, tablesToProcess, lhs, rhs);
 	}
 
@@ -541,7 +541,7 @@ public:
 		child = childIn;
 	}
 
-	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) { 
+	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) { 
 		ReturnType childType = child->typeCheck(allTables, tablesToProcess);
 		if (childType != ReturnType::BOOL) {
 			return ReturnType::ERROR;
