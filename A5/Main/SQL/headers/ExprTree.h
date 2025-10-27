@@ -3,13 +3,18 @@
 #define SQL_EXPRESSIONS
 
 #include "MyDB_AttType.h"
+#include "MyDB_Table.h"
 #include <string>
 #include <vector>
+#include <unordered_map>
+#include <utility>
 
 // create a smart pointer for database tables
 using namespace std;
 class ExprTree;
 typedef shared_ptr <ExprTree> ExprTreePtr;
+
+enum class ReturnType { STRING, INT, DOUBLE, BOOL, ERROR };
 
 // this class encapsules a parsed SQL expression (such as "this.that > 34.5 AND 4 = 5")
 
@@ -17,6 +22,7 @@ typedef shared_ptr <ExprTree> ExprTreePtr;
 class ExprTree {
 
 public:
+	virtual ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess);
 	virtual string toString () = 0;
 	virtual ~ExprTree () {}
 };
@@ -103,6 +109,46 @@ public:
 	Identifier (char *tableNameIn, char *attNameIn) {
 		tableName = string (tableNameIn);
 		attName = string (attNameIn);
+	}
+
+	ReturnType typeCheck(unordered_map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
+		string name;
+		bool found = false;
+		for (pair<string, string> currPair : tablesToProcess) {
+			if (currPair.second == this->tableName) {
+				name = currPair.first;
+				found = true;
+				break;
+			}
+		}
+
+		if (!found) {
+			cout << "Invalid alias " <<  this->tableName << endl;
+			return ReturnType::ERROR;
+		}
+
+		// We should have already caught that tableName is in allTables
+		MyDB_TablePtr table = allTables.at(name);
+		MyDB_SchemaPtr schema = table->getSchema();
+		pair<int, MyDB_AttTypePtr> attPair = schema->getAttByName(this->attName);
+
+		// No need to print an error since schema->getAttByName() will already
+		// print something if there's an error.
+		if (attPair.first == -1)
+			return ReturnType::ERROR;
+
+		MyDB_AttTypePtr att = attPair.second;
+
+		if (att->isBool())
+			return ReturnType::BOOL;
+		
+		if (att->promotableToInt())
+			return ReturnType::INT;
+
+		if (att->promotableToDouble())
+			return ReturnType::DOUBLE;
+
+		return ReturnType::STRING;
 	}
 
 	string toString () {
