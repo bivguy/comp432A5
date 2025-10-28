@@ -355,7 +355,7 @@ public:
 			}
 
 			// if either side is a string, then the type is string
-			if (leftType == ReturnType::STRING && rightType == ReturnType::STRING) {
+			if (leftType == ReturnType::STRING || rightType == ReturnType::STRING) {
 				return ReturnType::STRING;
 			}
 
