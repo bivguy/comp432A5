@@ -236,9 +236,7 @@ public:
 	
 	~SFWQuery () {}
 
-	bool checkTables(MyDB_CatalogPtr catalog) {
-		map <string, MyDB_TablePtr> allTables = MyDB_Table::getAllTables (catalog);
-
+	bool checkTables(map<string, MyDB_TablePtr> &allTables) {
 		for (pair<string, string> aliasPair : this->tablesToProcess) {
 			if (allTables.find(aliasPair.second) == allTables.end()) {
 				cout << "Invalid alias " << aliasPair.second << endl;
@@ -269,6 +267,11 @@ public:
 	}
 
 	void printIsValidStatement(map<string, MyDB_TablePtr> &allTables) {
+		for (auto a : tablesToProcess) {
+			bool validTable = checkTables(allTables);
+			cout << "\t" << a.first << " AS " << a.second << endl;
+		}
+
 		for (auto a : valuesToSelect) {
 			ReturnType returnType = a->typeCheck(allTables, tablesToProcess);
 
@@ -279,19 +282,12 @@ public:
 			}
 		}
 
-		// for (auto a : tablesToProcess) {
-		// 	bool validTable = checkTables()
-		// 	cout << "\t" << a.first << " AS " << a.second << "\n";
-		// }
-
-
 		for (auto a : allDisjunctions) {
 			ReturnType returnType = a->typeCheck(allTables, tablesToProcess);
 
-			// check that it's a valid return type
-			if (returnType == ReturnType::ERROR) {
-				cout << "Invalid SQL Disjunctions\n" << flush;
-				return;
+			if (returnType != ReturnType::BOOL) {
+				cout << "Invalid SQL Disjunction" << endl << flush;
+				return;	
 			}
 		}
 
