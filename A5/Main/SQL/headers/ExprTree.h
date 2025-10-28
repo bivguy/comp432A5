@@ -5,6 +5,7 @@
 #include "MyDB_AttType.h"
 #include "MyDB_Table.h"
 #include <string>
+#include <set>
 #include <vector>
 #include <utility>
 #include <cstring>
@@ -23,6 +24,7 @@ class ExprTree {
 
 public:
 	virtual ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) = 0;
+	virtual bool checkGrouping(set<tuple<string, string>> &groupings, bool isSelectClause);
 	virtual string toString () = 0;
 	virtual ~ExprTree () {}
 };
@@ -217,6 +219,25 @@ public:
 		attName = string (attNameIn);
 	}
 
+	bool checkGrouping(set<tuple<string, string>> &groupings, bool isSelectClause) {
+		auto curTuple = make_tuple(tableName, attName);
+		// if this is from a select clause, then we must see if it exists in groupings
+		if (isSelectClause) {
+			
+			// we did not find this select statement in the current groupings
+			if (groupings.find(curTuple) == groupings.end()) {
+				return false;
+			}
+
+			return true;
+		}
+		// if this is a grouping clase, then add it to the set
+		else {
+			groupings.insert(curTuple);
+			return true;
+		}
+	}
+
 	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
 		string name;
 		bool found = false;
@@ -278,6 +299,11 @@ public:
 		rhs = rhsIn;
 	}
 
+	bool checkGrouping(set<tuple<string, string>> &groupings, bool isSelectClause) {
+		return (lhs->checkGrouping(groupings, isSelectClause) && 
+				rhs->checkGrouping(groupings, isSelectClause));
+	}
+
 	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
 		return typeCheckForArithmetic(allTables, tablesToProcess, lhs, rhs);
 	}
@@ -301,6 +327,11 @@ public:
 	PlusOp (ExprTreePtr lhsIn, ExprTreePtr rhsIn) {
 		lhs = lhsIn;
 		rhs = rhsIn;
+	}
+
+	bool checkGrouping(set<tuple<string, string>> &groupings, bool isSelectClause) {
+		return (lhs->checkGrouping(groupings, isSelectClause) && 
+				rhs->checkGrouping(groupings, isSelectClause));
 	}
 
 	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
@@ -353,6 +384,11 @@ public:
 		rhs = rhsIn;
 	}
 
+	bool checkGrouping(set<tuple<string, string>> &groupings, bool isSelectClause) {
+		return (lhs->checkGrouping(groupings, isSelectClause) && 
+				rhs->checkGrouping(groupings, isSelectClause));
+	}
+
 	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
 		return typeCheckForArithmetic(allTables, tablesToProcess, lhs, rhs);
 	}
@@ -376,6 +412,11 @@ public:
 	DivideOp (ExprTreePtr lhsIn, ExprTreePtr rhsIn) {
 		lhs = lhsIn;
 		rhs = rhsIn;
+	}
+
+	bool checkGrouping(set<tuple<string, string>> &groupings, bool isSelectClause) {
+		return (lhs->checkGrouping(groupings, isSelectClause) && 
+				rhs->checkGrouping(groupings, isSelectClause));
 	}
 
 	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
@@ -403,6 +444,11 @@ public:
 		rhs = rhsIn;
 	}
 
+	bool checkGrouping(set<tuple<string, string>> &groupings, bool isSelectClause) {
+		return (lhs->checkGrouping(groupings, isSelectClause) && 
+				rhs->checkGrouping(groupings, isSelectClause));
+	}
+
 	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
 		return typeCheckForComparisons(allTables, tablesToProcess, lhs, rhs);
 	}
@@ -426,6 +472,11 @@ public:
 	LtOp (ExprTreePtr lhsIn, ExprTreePtr rhsIn) {
 		lhs = lhsIn;
 		rhs = rhsIn;
+	}
+
+	bool checkGrouping(set<tuple<string, string>> &groupings, bool isSelectClause) {
+		return (lhs->checkGrouping(groupings, isSelectClause) && 
+				rhs->checkGrouping(groupings, isSelectClause));
 	}
 
 	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
@@ -452,6 +503,11 @@ public:
 		lhs = lhsIn;
 		rhs = rhsIn;
 	}
+
+	bool checkGrouping(set<tuple<string, string>> &groupings, bool isSelectClause) {
+		return (lhs->checkGrouping(groupings, isSelectClause) && 
+				rhs->checkGrouping(groupings, isSelectClause));
+	}
 	
 	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
 		return typeCheckForEqualities(allTables, tablesToProcess, lhs, rhs);
@@ -476,6 +532,11 @@ public:
 	OrOp (ExprTreePtr lhsIn, ExprTreePtr rhsIn) {
 		lhs = lhsIn;
 		rhs = rhsIn;
+	}
+
+	bool checkGrouping(set<tuple<string, string>> &groupings, bool isSelectClause) {
+		return (lhs->checkGrouping(groupings, isSelectClause) && 
+				rhs->checkGrouping(groupings, isSelectClause));
 	}
 
 	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
@@ -517,6 +578,11 @@ public:
 		rhs = rhsIn;
 	}
 
+	bool checkGrouping(set<tuple<string, string>> &groupings, bool isSelectClause) {
+		return (lhs->checkGrouping(groupings, isSelectClause) && 
+				rhs->checkGrouping(groupings, isSelectClause));
+	}
+
 	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
 		return typeCheckForEqualities(allTables, tablesToProcess, lhs, rhs);
 	}
@@ -538,6 +604,10 @@ public:
 
 	NotOp (ExprTreePtr childIn) {
 		child = childIn;
+	}
+
+	bool checkGrouping(set<tuple<string, string>> &groupings, bool isSelectClause) {
+		return child->checkGrouping(groupings, isSelectClause);
 	}
 
 	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) { 
@@ -566,6 +636,10 @@ public:
 
 	SumOp (ExprTreePtr childIn) {
 		child = childIn;
+	}
+
+	bool checkGrouping(set<tuple<string, string>> &groupings, bool isSelectClause) {
+		return true;
 	}
 
 	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {
@@ -599,6 +673,10 @@ public:
 
 	AvgOp (ExprTreePtr childIn) {
 		child = childIn;
+	}
+
+	bool checkGrouping(set<tuple<string, string>> &groupings, bool isSelectClause) {
+		return true;
 	}
 
 	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) {

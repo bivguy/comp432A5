@@ -250,12 +250,21 @@ public:
 	bool checkAggregations() {
 
 		// go through all of the grouping clauses
+		set<tuple<string, string>> groupingMap;
 		// add them to some set
+		for (auto a: groupingClauses) {
+			a->checkGrouping(groupingMap, false);		
+		}
 
 		// go thtough each value to select that ISNT an aggregate 
 		// check if they exist in the groupingMap 
+		for (auto a: valuesToSelect) {
+			if (!a->checkGrouping(groupingMap, true)) {
+				return false;
+			}
+		}
 
-		return false;
+		return true;
 	}
 
 	void print () {
