@@ -256,7 +256,7 @@ public:
 			a->checkGrouping(groupingMap, false);		
 		}
 
-		// go thtough each value to select that ISNT an aggregate 
+		// go through each value to select that ISNT an aggregate 
 		// check if they exist in the groupingMap 
 		for (auto a: valuesToSelect) {
 			if (!a->checkGrouping(groupingMap, true)) {

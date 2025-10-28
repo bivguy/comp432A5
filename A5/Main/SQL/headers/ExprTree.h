@@ -361,6 +361,7 @@ public:
 
 			// if it's not a string, then left and right side must be numeric
 			if (!bothNumeric(leftType, rightType)) {
+				cout << "ERROR: Can only add numeric types with other numeric types or strings" << endl;
 				return ReturnType::ERROR;
 			}
 
@@ -560,6 +561,7 @@ public:
 
 		// both sides must be BOOL
 		if (leftType != ReturnType::BOOL || rightType != ReturnType::BOOL) {
+			cout << "ERROR: Can do the OR operation with boolean expressions" << endl;
 			return ReturnType::ERROR;
 		}
 
@@ -622,6 +624,7 @@ public:
 	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) { 
 		ReturnType childType = child->typeCheck(allTables, tablesToProcess);
 		if (childType != ReturnType::BOOL) {
+			cout << "ERROR: Can do the NOT operation with a boolean" << endl;
 			return ReturnType::ERROR;
 		}
 		return ReturnType::BOOL;
