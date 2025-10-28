@@ -247,6 +247,17 @@ public:
 		return true;
 	}
 
+	bool checkAggregations() {
+
+		// go through all of the grouping clauses
+		// add them to some set
+
+		// go thtough each value to select that ISNT an aggregate 
+		// check if they exist in the groupingMap 
+
+		return false;
+	}
+
 	void print () {
 		cout << "Selecting the following:\n";
 		for (auto a : valuesToSelect) {
@@ -333,8 +344,8 @@ public:
 		isCreate = true;
 	}
 
-	bool checkTables(MyDB_CatalogPtr catalog) {
-		return this->myQuery.checkTables(catalog);
+	bool checkTables(map<string, MyDB_TablePtr> &allTables) {
+		return this->myQuery.checkTables(allTables);
 	}
 
 	bool isCreateTable () {
