@@ -24,7 +24,7 @@ class ExprTree {
 
 public:
 	virtual ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) = 0;
-	virtual bool checkGrouping(set<tuple<string, string>> &groupings, bool isSelectClause);
+	virtual bool checkGrouping(set<tuple<string, string>> &groupings, bool isSelectClause) { return true; }
 	virtual string toString () = 0;
 	virtual ~ExprTree () {}
 };
@@ -50,6 +50,7 @@ inline ReturnType typeCheckForArithmetic(map<string, MyDB_TablePtr> &allTables, 
 
 	// the left and right side must be an int or a double
 	if (!bothNumeric(leftType, rightType)) {
+		cout << "ERROR: Can only add/subtract/multiply/divide numeric types with numeric types" << endl;
 		return ReturnType::ERROR;
 	}
 
@@ -74,12 +75,14 @@ inline ReturnType typeCheckForComparisons(map<string, MyDB_TablePtr> &allTables,
 		// if one is a string, both must be a string
 		if ((leftType == ReturnType::STRING && rightType != ReturnType::STRING) ||
 		    (leftType != ReturnType::STRING && rightType == ReturnType::STRING)) {
+			cout << "ERROR: Can only compare strings with strings" << endl;
 			return ReturnType::ERROR;
 		}
 
 		// if one is numeric, both must be numeric
 		if ((isNumeric(leftType) && !isNumeric(rightType)) ||
 		    (!isNumeric(leftType) && isNumeric(rightType))) {
+			cout << "ERROR: Can only compare numeric types with numeric types" << endl;
 			return ReturnType::ERROR;
 		}
 
@@ -100,18 +103,21 @@ inline ReturnType typeCheckForEqualities(map<string, MyDB_TablePtr> &allTables, 
 		// if one is a string, both must be a string
 		if ((leftType == ReturnType::STRING && rightType != ReturnType::STRING) ||
 		    (leftType != ReturnType::STRING && rightType == ReturnType::STRING)) {
+			cout << "ERROR: Can only compare strings with strings" << endl;
 			return ReturnType::ERROR;
 		}
 
 		// if one is numeric, both must be numeric
 		if ((isNumeric(leftType) && !isNumeric(rightType)) ||
 		    (!isNumeric(leftType) && isNumeric(rightType))) {
+			cout << "ERROR: Can only compare numeric types with numeric types" << endl;
 			return ReturnType::ERROR;
 		}
 
 		// if one is a bool, both must be bool
 		if ((leftType == ReturnType::BOOL && rightType != ReturnType::BOOL) ||
 		    (leftType != ReturnType::BOOL && rightType == ReturnType::BOOL)) {
+				cout << "ERROR: Can only compare boolean types with boolean types" << endl;
 			return ReturnType::ERROR;
 		}
 
@@ -226,6 +232,7 @@ public:
 			
 			// we did not find this select statement in the current groupings
 			if (groupings.find(curTuple) == groupings.end()) {
+				cout << "ERROR: No attribute " << tableName << "." << attName << " in GROUP BY" << endl;
 				return false;
 			}
 
@@ -250,7 +257,7 @@ public:
 		}
 
 		if (!found) {
-			cout << "Invalid alias " <<  this->tableName << endl;
+			cout << "ERROR: Invalid alias " <<  this->tableName << endl;
 			return ReturnType::ERROR;
 		}
 
@@ -261,8 +268,10 @@ public:
 
 		// No need to print an error since schema->getAttByName() will already
 		// print something if there's an error.
-		if (attPair.first == -1)
+		if (attPair.first == -1) {
+			cout << "ERROR: No attribute " << this->attName << " in table " << name << endl;
 			return ReturnType::ERROR;
+		}
 
 		MyDB_AttTypePtr att = attPair.second;
 
@@ -346,7 +355,7 @@ public:
 			}
 
 			// if either side is a string, then the type is string
-			if (leftType == ReturnType::STRING || rightType == ReturnType::STRING) {
+			if (leftType == ReturnType::STRING && rightType == ReturnType::STRING) {
 				return ReturnType::STRING;
 			}
 
@@ -646,6 +655,7 @@ public:
 		// make sure it's numeric
 		ReturnType childType = child->typeCheck(allTables, tablesToProcess);
 		if (!isNumeric(childType)) {
+			cout << "ERROR: Can only SUM over numeric types" << endl;
 			return ReturnType::ERROR;
 		}
 
@@ -683,6 +693,7 @@ public:
 		// make sure it's numeric
 		ReturnType childType = child->typeCheck(allTables, tablesToProcess);
 		if (!isNumeric(childType)) {
+			cout << "ERROR: Can only AVG over numeric types" << endl;
 			return ReturnType::ERROR;
 		}
 

@@ -238,8 +238,8 @@ public:
 
 	bool checkTables(map<string, MyDB_TablePtr> &allTables) {
 		for (pair<string, string> aliasPair : this->tablesToProcess) {
-			if (allTables.find(aliasPair.second) == allTables.end()) {
-				cout << "Invalid alias " << aliasPair.second << endl;
+			if (allTables.find(aliasPair.first) == allTables.end()) {
+				cout << "Invalid table " << aliasPair.first << endl;
 				return false;
 			}
 		}
@@ -289,7 +289,8 @@ public:
 	void printIsValidStatement(map<string, MyDB_TablePtr> &allTables) {
 		for (auto a : tablesToProcess) {
 			bool validTable = checkTables(allTables);
-			cout << "\t" << a.first << " AS " << a.second << endl;
+			if (!validTable)
+				return;
 		}
 
 		for (auto a : valuesToSelect) {
@@ -319,6 +320,11 @@ public:
 				cout << "Invalid SQL Groupings\n" << flush;
 				return;
 			}
+		}
+
+		if (groupingClauses.size() > 0 && !checkAggregations()) {
+			cout << "SELECT statement does not align with GROUP BY" << endl;
+			return;
 		}
 
 		cout << "Valid SQL Select Statement\n" << flush;
