@@ -161,8 +161,9 @@ int main (int numArgs, char **args) {
 
 					} else if (final->isSFWQuery ()) {
 
-						// print it out
-						final->printSFWQuery ();
+						// print it out if it is a valid query
+						final->printIsValidQuery(allTables);
+						// final->printSFWQuery ();
 					}
 
 					// get outta here

@@ -268,6 +268,46 @@ public:
 		}
 	}
 
+	void printIsValidStatement(map<string, MyDB_TablePtr> &allTables) {
+		for (auto a : valuesToSelect) {
+			ReturnType returnType = a->typeCheck(allTables, tablesToProcess);
+
+			// check that it's a valid return type
+			if (returnType == ReturnType::ERROR) {
+				cout << "Invalid SQL Select Statement\n" << flush;
+				return;
+			}
+		}
+
+		// for (auto a : tablesToProcess) {
+		// 	bool validTable = checkTables()
+		// 	cout << "\t" << a.first << " AS " << a.second << "\n";
+		// }
+
+
+		for (auto a : allDisjunctions) {
+			ReturnType returnType = a->typeCheck(allTables, tablesToProcess);
+
+			// check that it's a valid return type
+			if (returnType == ReturnType::ERROR) {
+				cout << "Invalid SQL Disjunctions\n" << flush;
+				return;
+			}
+		}
+
+		for (auto a : groupingClauses) {
+			ReturnType returnType = a->typeCheck(allTables, tablesToProcess);
+
+			// check that it's a valid return type
+			if (returnType == ReturnType::ERROR) {
+				cout << "Invalid SQL Groupings\n" << flush;
+				return;
+			}
+		}
+
+		cout << "Valid SQL Select Statement\n" << flush;
+	}
+
 	#include "FriendDecls.h"
 };
 
@@ -315,6 +355,10 @@ public:
 	
 	void printSFWQuery () {
 		myQuery.print ();
+	}
+
+	void printIsValidQuery(map <string, MyDB_TablePtr> allTables) {
+		myQuery.printIsValidStatement(allTables);
 	}
 
 	#include "FriendDecls.h"
