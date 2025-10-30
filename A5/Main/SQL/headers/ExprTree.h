@@ -50,7 +50,7 @@ inline ReturnType typeCheckForArithmetic(map<string, MyDB_TablePtr> &allTables, 
 
 	// the left and right side must be an int or a double
 	if (!bothNumeric(leftType, rightType)) {
-		cout << "ERROR: Can only add/subtract/multiply/divide numeric types with numeric types" << endl;
+		cout << "ERROR: Can only subtract/multiply/divide numeric types with numeric types" << endl;
 		return ReturnType::ERROR;
 	}
 
@@ -561,7 +561,7 @@ public:
 
 		// both sides must be BOOL
 		if (leftType != ReturnType::BOOL || rightType != ReturnType::BOOL) {
-			cout << "ERROR: Can do the OR operation with boolean expressions" << endl;
+			cout << "ERROR: Can only do the OR operation with boolean expressions" << endl;
 			return ReturnType::ERROR;
 		}
 
@@ -624,7 +624,7 @@ public:
 	ReturnType typeCheck(map<string, MyDB_TablePtr> &allTables, vector<pair<string, string>> &tablesToProcess) { 
 		ReturnType childType = child->typeCheck(allTables, tablesToProcess);
 		if (childType != ReturnType::BOOL) {
-			cout << "ERROR: Can do the NOT operation with a boolean" << endl;
+			cout << "ERROR: Can only do the NOT operation with a boolean type" << endl;
 			return ReturnType::ERROR;
 		}
 		return ReturnType::BOOL;
@@ -658,7 +658,9 @@ public:
 		// make sure it's numeric
 		ReturnType childType = child->typeCheck(allTables, tablesToProcess);
 		if (!isNumeric(childType)) {
-			cout << "ERROR: Can only SUM over numeric types" << endl;
+			if (childType != ReturnType::ERROR) {
+				cout << "ERROR: Can only SUM over numeric types" << endl;
+			}
 			return ReturnType::ERROR;
 		}
 
@@ -696,7 +698,9 @@ public:
 		// make sure it's numeric
 		ReturnType childType = child->typeCheck(allTables, tablesToProcess);
 		if (!isNumeric(childType)) {
-			cout << "ERROR: Can only AVG over numeric types" << endl;
+			if (childType != ReturnType::ERROR) {
+				cout << "ERROR: Can only AVG over numeric types" << endl;
+			}
 			return ReturnType::ERROR;
 		}
 

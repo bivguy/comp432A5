@@ -239,7 +239,7 @@ public:
 	bool checkTables(map<string, MyDB_TablePtr> &allTables) {
 		for (pair<string, string> aliasPair : this->tablesToProcess) {
 			if (allTables.find(aliasPair.first) == allTables.end()) {
-				cout << "Invalid table " << aliasPair.first << endl;
+				cout << "ERROR: Invalid table " << aliasPair.first << endl;
 				return false;
 			}
 		}
@@ -298,7 +298,6 @@ public:
 
 			// check that it's a valid return type
 			if (returnType == ReturnType::ERROR) {
-				cout << "Invalid SQL Select Statement\n" << flush;
 				return;
 			}
 		}
@@ -307,7 +306,6 @@ public:
 			ReturnType returnType = a->typeCheck(allTables, tablesToProcess);
 
 			if (returnType != ReturnType::BOOL) {
-				cout << "Invalid SQL Disjunction" << endl << flush;
 				return;	
 			}
 		}
@@ -317,13 +315,11 @@ public:
 
 			// check that it's a valid return type
 			if (returnType == ReturnType::ERROR) {
-				cout << "Invalid SQL Groupings\n" << flush;
 				return;
 			}
 		}
 
 		if (groupingClauses.size() > 0 && !checkAggregations()) {
-			cout << "SELECT statement does not align with GROUP BY" << endl;
 			return;
 		}
 
