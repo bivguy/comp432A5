@@ -1,0 +1,88 @@
+1.
+
+No errors found.
+
+2.
+
+ERROR: No attribute s.s_suppkey in GROUP BY
+
+3.
+
+ERROR: Can only compare strings with strings
+
+4.
+
+ERROR: Can only SUM over numeric types
+
+5.
+
+No errors found.
+
+6.
+
+ERROR: Can only compare strings with strings
+
+7.
+
+Could not find attribute k_orderkey
+Candidates were: 
+        o_orderkey
+        o_custkey
+        o_orderstatus
+        o_totalprice
+        o_orderdate
+        o_orderpriority
+        o_clerk
+        o_shippriority
+        o_comment
+ERROR: No attribute k_orderkey in table orders
+
+8.
+
+ERROR: Unknown alias h
+
+9.
+
+ERROR: Can only subtract/multiply/divide numeric types with numeric types
+
+10.
+
+ERROR: Unknown table customers
+
+11.
+
+No errors found.
+
+12.
+
+No errors found.
+
+13.
+
+Could not find attribute l_extendedprice
+Candidates were: 
+    c_custkey
+    c_name
+    c_address
+    c_nationkey
+    c_phone
+    c_acctbal
+    c_mktsegment
+    c_comment
+ERROR: No attribute l_extendedprice in table customer
+
+14.
+
+No errors found.
+
+15.
+
+ERROR: Can only compare strings with strings
+
+16.
+
+No errors found.
+
+17.
+
+No errors found.

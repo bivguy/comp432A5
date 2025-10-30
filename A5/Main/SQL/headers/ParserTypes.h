@@ -239,7 +239,7 @@ public:
 	bool checkTables(map<string, MyDB_TablePtr> &allTables) {
 		for (pair<string, string> aliasPair : this->tablesToProcess) {
 			if (allTables.find(aliasPair.first) == allTables.end()) {
-				cout << "ERROR: Invalid table " << aliasPair.first << endl;
+				cout << "ERROR: Unknown table " << aliasPair.first << endl;
 				return false;
 			}
 		}
@@ -323,7 +323,7 @@ public:
 			return;
 		}
 
-		cout << "Valid SQL Select Statement\n" << flush;
+		cout << "No errors found.\n" << flush;
 	}
 
 	#include "FriendDecls.h"

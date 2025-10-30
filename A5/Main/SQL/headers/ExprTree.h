@@ -257,7 +257,7 @@ public:
 		}
 
 		if (!found) {
-			cout << "ERROR: Invalid alias " <<  this->tableName << endl;
+			cout << "ERROR: Unknown alias " <<  this->tableName << endl;
 			return ReturnType::ERROR;
 		}
 
